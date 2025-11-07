@@ -22,8 +22,8 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
    克隆仓库：`git clone https://github.com/ZoKa12739/Voice-Activated-Smart-Wheelchair.git`
 2. Install dependencies: Python 3.8+, TensorFlow, Arduino IDE.  
    安装依赖：Python 3.8+、TensorFlow、Arduino IDE。
-3. Upload motor control code to Arduino Mega2560.  
-   将电机控制代码上传至 Arduino Mega2560。
+3. Upload motor control code to STM32.  
+   将电机控制代码上传至 STM32。
 4. Run the voice recognition module on Raspberry Pi or PC.  
    在树莓派或PC上运行语音识别模块。
 
