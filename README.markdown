@@ -38,17 +38,15 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
    监控语音反馈以确认指令执行。
 
 ## Project Structure / 项目结构
-- `/src/voice_recognition`: Voice processing and recognition code.  
-  `/src/voice_recognition`：语音处理与识别代码。
-- `/src/motor_control`: Arduino code for motor control.  
-  `/src/motor_control`：Arduino电机控制代码。
-- `/src/communication`: Serial and wireless communication modules.  
-  `/src/communication`：串口与无线通信模块。
+- `/src/raspberry`: Voice processing and recognition code.  
+  `/src/raspberry`：语音处理与识别代码。
+- `/src/stm32/WheelchairControl`: STM32 code for motor control and communication.  
+  `/src/WheelchairControl`：STM32电机控制与通信代码。
 - `/docs`: Project documentation and test reports.  
   `/docs`：项目文档与测试报告。
 
 ## Hardware Requirements / 硬件要求
-- Arduino Mega2560  
+- STM32F407STM32F407VET6
 - Raspberry Pi (for voice processing)  
 - Ultrasonic sensors  
 - Microphone array  
