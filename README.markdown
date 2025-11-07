@@ -71,7 +71,6 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
 - Ziyuan Bao (Embedded Systems / 嵌入式系统开发)  
 - Kunyang Zhai (Algorithm Programming / 算法编程)  
 - Zhihao Sun (Project Leader / 项目负责人)  
-- Mingyang Wang (Hardware Platform / 硬件平台)  
 
 ## License / 许可证
 MIT License
