@@ -46,11 +46,12 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
   `/docs`：项目文档与测试报告。
 
 ## Hardware Requirements / 硬件要求
-- STM32F407STM32F407VET6
+- STM32F407VET6
 - Raspberry Pi (for voice processing)  
 - Ultrasonic sensors  
 - Microphone array  
-- Motors and power module  
+- Motors and power module
+- STM32F407VET6
 - 树莓派（用于语音处理）  
 - 超声波传感器  
 - 麦克风阵列  
