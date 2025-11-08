@@ -60,8 +60,8 @@ all: main-build
 main-build: WheelchairControl.elf secondary-outputs
 
 # Tool invocations
-WheelchairControl.elf WheelchairControl.map: $(OBJS) $(USER_OBJS) C:\StudyHub\竞赛资料\EmbedmentFiles\STM32Project\WheelchairControl\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "WheelchairControl.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\StudyHub\竞赛资料\EmbedmentFiles\STM32Project\WheelchairControl\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="WheelchairControl.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+WheelchairControl.elf WheelchairControl.map: $(OBJS) $(USER_OBJS) C:\StudyHub\竞赛资料\大创资料\new-github\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "WheelchairControl.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\StudyHub\竞赛资料\大创资料\new-github\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="WheelchairControl.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
