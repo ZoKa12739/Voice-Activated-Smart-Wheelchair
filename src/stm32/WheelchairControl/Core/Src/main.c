@@ -109,11 +109,7 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
   // // 启动 DAC 通道 2 (PA5)
   HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
 
-  // 启动 ADC1 并开启 DMA 模式
-  // &hadc1: ADC 句柄
-  // (uint32_t*)adc_values: DMA 目标地址 (这里做一下强制类型转换)
-  // 2: 要转换的数据个数
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
+
 
   /* USER CODE END 2 */
 
