@@ -49,16 +49,43 @@
 
 /* USER CODE BEGIN PV */
 
-// "volatile" 关键字告诉编译器，这个变量可能会在任何时候被外部（即DMA）改变
-volatile uint16_t adc_values[2];// 定义一个16位无符号整数数组，大小为 2，用于存储 X 和 Y 轴的 ADC 结果
-// 用于存放要发送的串口字符串
+// 1. ADC 数据存储 (DMA 自动搬运)
+volatile uint16_t adc_values[2];
+
+// 2. 调试打印缓冲区
 char uart_buf[100];
+
+// 3. 树莓派命令接收相关
+uint8_t rx_buffer[1];
+volatile char pi_command = 'S'; // 默认停止
+
+// 4. 速度控制相关
+uint8_t current_gear = 3;       // 当前档位 (默认3档)
+float speed_ratio = 1.0f;       // 速度系数
+
+// 5. 核心阈值定义 
+#define JOY_CENTER  3102        // 中点电压对应值
+#define DEADZONE    200         // 死区
+
+// 6. 偏离值定义 (解决前后速度不对称问题)
+// 我们保留约 0.6V 的安全余量
+// 0.6V 对应的 ADC 值大约是 745
+// 所以 DEV_DOWN = 3102 - 745 = 2357
+#define DEV_DOWN    2300 
+
+// 3.3V 对应的 ADC 值是 4095
+// 我们限制在 3.0V 左右 (安全余量)
+// 3.0V 对应 ADC 3720
+// DEV_UP = 3720 - 3102 = 618
+#define DEV_UP      600
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
 
 /* USER CODE END PFP */
 
@@ -100,6 +127,7 @@ int main(void)
   MX_ADC1_Init();
   MX_DAC_Init();
   MX_USART2_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // 启动 ADC1 并开启 DMA 模式，数据存入 adc_values 数组
@@ -109,11 +137,7 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
   // // 启动 DAC 通道 2 (PA5)
   HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
 
-  // 启动 ADC1 并开启 DMA 模式
-  // &hadc1: ADC 句柄
-  // (uint32_t*)adc_values: DMA 目标地址 (这里做一下强制类型转换)
-  // 2: 要转换的数据个数
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
+  HAL_UART_Receive_IT(&huart2, rx_buffer, 1);
 
   /* USER CODE END 2 */
 
@@ -131,33 +155,72 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
     * 3. 循环往复...
     */
 
-    // // 1. 将 X 轴的 ADC 值 (0-4095) 写入 DAC 通道 1 (PA4)
-    // //    adc_values[0] 对应 Rank 1 (PA0)
-     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, adc_values[0]);
+    // 1. 获取当前摇杆的物理位置
+    uint16_t x_raw = adc_values[0];
+    uint16_t y_raw = adc_values[1];
 
-    // // 2. 将 Y 轴的 ADC 值 (0-4095) 写入 DAC 通道 2 (PA5)
-    // //    adc_values[1] 对应 Rank 2 (PA1)
-     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, adc_values[1]);
+    // 2. 准备 DAC 输出变量
+    uint16_t dac_x = JOY_CENTER;
+    uint16_t dac_y = JOY_CENTER;
 
-    // // (可选) 加一个 5ms 的小延迟，让 CPU 稍微休息
-     HAL_Delay(5);
+    // 3. 安全仲裁逻辑
+    if ((x_raw > JOY_CENTER + DEADZONE || x_raw < JOY_CENTER - DEADZONE) ||
+        (y_raw > JOY_CENTER + DEADZONE || y_raw < JOY_CENTER - DEADZONE))
+    {
+        // 【状态 A：人工接管】
+        dac_x = x_raw;
+        dac_y = y_raw;
+    }
+    else
+    {
+        // 【状态 B：语音控制】
 
-    
-    // 1. 将 ADC 原始值 (0-4095) 格式化为字符串
-    //    %u 表示 "unsigned int" (无符号整数)
-    //    \r\n 表示回车换行，这样串口助手里能自动换行
-    int len = sprintf(uart_buf, "X-Axis: %u,  Y-Axis: %u\r\n", adc_values[0], adc_values[1]);
+        uint16_t val_fast_side = (uint16_t)(DEV_DOWN * speed_ratio); // 前进/左转用这个
 
-    // 2. 通过 USART2 发送格式化后的字符串
-    //    &huart2 是你的 USART2 句柄 (CubeMX 自动生成的)
-    //    (uint8_t*)uart_buf 是字符串数据
-    //    len 是字符串长度
-    //    100 是超时时间 (ms)，如果 100ms 内发不出去就放弃
-    HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, len, 100);
+        switch (pi_command)
+        {
+            case 'F': // 前进 (0V方向，原本很快，需要运算限速)
+                dac_x = JOY_CENTER; 
+                dac_y = JOY_CENTER - val_fast_side; 
+                break;
 
-    // 3. 延迟一段时间，比如 100ms
-    //    如果不延迟，你的串口会被海量数据刷屏，电脑会卡住
-    HAL_Delay(100);
+            case 'B': // 后退 (3.3V方向，原本就很慢，不要运算，全速输出)
+                dac_x = JOY_CENTER; 
+                dac_y = JOY_CENTER + DEV_UP; // 直接加最大偏离值(990)，尽力输出 3.3V
+                break;
+
+            case 'L': // 左转 (0V方向，同前进，需要运算)
+                dac_x = JOY_CENTER - val_fast_side; 
+                dac_y = JOY_CENTER; 
+                break;
+
+            case 'R': // 右转 (3.3V方向，同后退，不要运算)
+                dac_x = JOY_CENTER + DEV_UP; // 直接输出 3.3V
+                dac_y = JOY_CENTER; 
+                break;
+
+            case 'S': // 停止
+            default:
+                dac_x = JOY_CENTER; 
+                dac_y = JOY_CENTER; 
+                break;
+        }
+    }
+
+    // 执行 DAC 输出
+    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_x);
+    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_y);
+
+    // --- 修改调试打印 ---
+    // 打印当前的 "档位 (Gear)" 和 "指令 (CMD)"
+    if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY)
+    {
+      int len = sprintf(uart_buf, "Gear:%u (%d%%) | CMD:%c | X:%u | Y:%u\r\n", 
+        current_gear, (int)(speed_ratio * 100), pi_command, dac_x, dac_y);
+        HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, len, 10);
+    }
+
+    HAL_Delay(50);
 
   }
   /* USER CODE END 3 */
@@ -209,6 +272,50 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// UART 接收完成回调函数
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        char cmd = rx_buffer[0];
+
+        // --- 【加减速逻辑】 ---
+        if (cmd == 'D') // Decelerate (减速/降档)
+        {
+            if (current_gear > 1) {
+                current_gear--; // 降一档
+            }
+            // 如果已经是 1档，就不动了
+        }
+        else if (cmd == 'A') // Accelerate (加速/升档)
+        {
+            if (current_gear < 3) {
+                current_gear++; // 升一档
+            }
+            // 如果已经是 3档，就不动了
+        }
+        
+        // --- 【运动指令逻辑】 ---
+        // 只有 F, B, L, R, S 才会改变运动状态
+        else if (cmd == 'F' || cmd == 'B' || cmd == 'L' || cmd == 'R' || cmd == 'S') 
+        {
+            pi_command = cmd;
+        }
+
+        // --- 【统一更新速度系数】 ---
+        // 根据当前的档位，刷新 speed_ratio
+        switch (current_gear)
+        {
+            case 1: speed_ratio = 0.3f; break; // 1档: 30%
+            case 2: speed_ratio = 0.6f; break; // 2档: 60%
+            case 3: speed_ratio = 1.0f; break; // 3档: 100%
+        }
+
+        // 重新开启中断
+        HAL_UART_Receive_IT(&huart2, rx_buffer, 1);
+    }
+}
 
 /* USER CODE END 4 */
 
