@@ -22,8 +22,8 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
    克隆仓库：`git clone https://github.com/ZoKa12739/Voice-Activated-Smart-Wheelchair.git`
 2. Install dependencies: Python 3.8+, TensorFlow, Arduino IDE.  
    安装依赖：Python 3.8+、TensorFlow、Arduino IDE。
-3. Upload motor control code to Arduino Mega2560.  
-   将电机控制代码上传至 Arduino Mega2560。
+3. Upload motor control code to STM32F407VGT6.  
+   将电机控制代码上传至 STM32F407VGT6。
 4. Run the voice recognition module on Raspberry Pi or PC.  
    在树莓派或PC上运行语音识别模块。
 
@@ -38,39 +38,33 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
    监控语音反馈以确认指令执行。
 
 ## Project Structure / 项目结构
-- `/src/voice_recognition`: Voice processing and recognition code.  
-  `/src/voice_recognition`：语音处理与识别代码。
-- `/src/motor_control`: Arduino code for motor control.  
-  `/src/motor_control`：Arduino电机控制代码。
-- `/src/communication`: Serial and wireless communication modules.  
-  `/src/communication`：串口与无线通信模块。
+- `/src/raspberry`: Voice processing and recognition code.  
+  `/src/raspberry`：语音处理与识别代码。
+- `/src/stm32/WheelchairControl`: STM32 code for control and connectivity.  
+  `/src/stm32/WheelchairControl`：STM32控制与通信代码。
 - `/docs`: Project documentation and test reports.  
   `/docs`：项目文档与测试报告。
 
 ## Hardware Requirements / 硬件要求
-- Arduino Mega2560  
-- Raspberry Pi (for voice processing)  
-- Ultrasonic sensors  
-- Microphone array  
+- STM32F407VGT6
+- Raspberry Pi 4B(for voice processing)  
+- Microphone
 - Motors and power module  
-- 树莓派（用于语音处理）  
-- 超声波传感器  
-- 麦克风阵列  
+- 树莓派4B（用于语音处理）  
+- 麦克风
 - 电机与电源模块  
 
 ## Future Work / 未来工作
 - Enhance dialect and natural language support.  
   增强方言和自然语言支持。
-- Integrate IoT for remote monitoring.  
-  集成物联网实现远程监控。
+
 - Optimize power efficiency and system stability.  
   优化能耗与系统稳定性。
 
 ## Team / 团队
-- Wenjie Liu (Development & Testing / 开发与测试)  
-- Ziyuan Bao (Embedded Systems / 嵌入式系统开发)  
-- Kunyang Zhai (Algorithm Programming / 算法编程)  
-- Zhihao Sun (Project Leader / 项目负责人)  
+- Wenjie Liu 
+- Ziyuan Bao 
+- Kunyang Zhai 
 
 ## License / 许可证
 MIT License
