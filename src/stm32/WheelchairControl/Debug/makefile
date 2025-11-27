@@ -1,5 +1,5 @@
 ################################################################################
-# Automatically-generated file. Do not edit!
+# 自动生成的文件。不要编辑！
 # Toolchain: GNU Tools for STM32 (13.3.rel1)
 ################################################################################
 
@@ -34,50 +34,50 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := WheelchairControl
+BUILD_ARTIFACT_NAME := WheelchairControl-gitee
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-WheelchairControl.elf \
+WheelchairControl-gitee.elf \
 
 MAP_FILES += \
-WheelchairControl.map \
+WheelchairControl-gitee.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-WheelchairControl.list \
+WheelchairControl-gitee.list \
 
 
-# All Target
+# 所有目标
 all: main-build
 
-# Main-build Target
-main-build: WheelchairControl.elf secondary-outputs
+# 主构建目标
+main-build: WheelchairControl-gitee.elf secondary-outputs
 
-# Tool invocations
-WheelchairControl.elf WheelchairControl.map: $(OBJS) $(USER_OBJS) C:\StudyHub\竞赛资料\大创资料\new-github\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "WheelchairControl.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\StudyHub\竞赛资料\大创资料\new-github\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="WheelchairControl.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-	@echo 'Finished building target: $@'
+# 工具调用
+WheelchairControl-gitee.elf WheelchairControl-gitee.map: $(OBJS) $(USER_OBJS) C:\StudyHub\竞赛资料\大创资料\new-gitee\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "WheelchairControl-gitee.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\StudyHub\竞赛资料\大创资料\new-gitee\Voice-Activated-Smart-Wheelchair\src\stm32\WheelchairControl\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="WheelchairControl-gitee.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	@echo '已结束构建目标： $@'
 	@echo ' '
 
 default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	arm-none-eabi-size  $(EXECUTABLES)
-	@echo 'Finished building: $@'
+	@echo '已结束构建： $@'
 	@echo ' '
 
-WheelchairControl.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "WheelchairControl.list"
-	@echo 'Finished building: $@'
+WheelchairControl-gitee.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "WheelchairControl-gitee.list"
+	@echo '已结束构建： $@'
 	@echo ' '
 
-# Other Targets
+# 其他目标
 clean:
-	-$(RM) WheelchairControl.elf WheelchairControl.list WheelchairControl.map default.size.stdout
+	-$(RM) WheelchairControl-gitee.elf WheelchairControl-gitee.list WheelchairControl-gitee.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

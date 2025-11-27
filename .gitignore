@@ -6,7 +6,7 @@ build/
 Bin/
 Binary/
 
-# 工作空间元数据 (最容易导致冲突崩溃！)
+# 工作空间元数据 
 .metadata/
 
 # 临时的列表文件
@@ -19,3 +19,4 @@ Binary/
 # --- 如果你用 Trae/VSCode，也要忽略它们的本地配置 ---
 .vscode/
 .idea/
+src/raspberry/
