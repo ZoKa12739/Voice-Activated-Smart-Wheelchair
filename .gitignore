@@ -19,4 +19,3 @@ Binary/
 # --- 如果你用 Trae/VSCode，也要忽略它们的本地配置 ---
 .vscode/
 .idea/
-src/raspberry/
