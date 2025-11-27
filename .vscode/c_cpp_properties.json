@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "c:/StudyHub/竞赛资料/大创资料/new-github/Voice-Activated-Smart-Wheelchair/src/stm32/WheelchairControl/Core/Inc",
+                "c:/StudyHub/竞赛资料/大创资料/new-github/Voice-Activated-Smart-Wheelchair/src/stm32/WheelchairControl/Drivers/STM32F4xx_HAL_Driver/Inc",
+                "c:/StudyHub/竞赛资料/大创资料/new-github/Voice-Activated-Smart-Wheelchair/src/stm32/WheelchairControl/Drivers/CMSIS/Include",
+                "c:/StudyHub/竞赛资料/大创资料/new-github/Voice-Activated-Smart-Wheelchair/src/stm32/WheelchairControl/Drivers/CMSIS/Device/ST/STM32F4xx/Include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "STM32F407xx"
+            ],
+            "compilerPath": "C:/cygwin64/bin/gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}

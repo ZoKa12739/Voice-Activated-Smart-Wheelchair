@@ -1,0 +1,22 @@
+# --- STM32CubeIDE 必须忽略的本地垃圾 ---
+# 编译输出文件夹
+Debug/
+Release/
+build/
+Bin/
+Binary/
+
+# 工作空间元数据 
+.metadata/
+
+# 临时的列表文件
+*.lst
+*.map
+*.o
+*.d
+*.su
+
+# --- 如果你用 Trae/VSCode，也要忽略它们的本地配置 ---
+.vscode/
+.idea/
+src/raspberry/
