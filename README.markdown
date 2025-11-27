@@ -20,7 +20,7 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
 ## Installation / 安装
 1. Clone the repository: `git clone https://github.com/ZoKa12739/Voice-Activated-Smart-Wheelchair.git`  
    克隆仓库：`git clone https://github.com/ZoKa12739/Voice-Activated-Smart-Wheelchair.git`
-2. Install dependencies: Python 3.8+, TensorFlow, Arduino IDE.  
+2. Install dependencies: Python 3.8+, TensorFlow, Cube IDE.  
    安装依赖：Python 3.8+、TensorFlow、Arduino IDE。
 3. Upload motor control code to STM32F407VGT6.  
    将电机控制代码上传至 STM32F407VGT6。
@@ -40,8 +40,8 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
 ## Project Structure / 项目结构
 - `/src/raspberry`: Voice processing and recognition code.  
   `/src/raspberry`：语音处理与识别代码。
-- `/src/stm32/WheelchairControl`: STM32 code for control and connectivity.  
-  `/src/stm32/WheelchairControl`：STM32控制与通信代码。
+- `/src/stm32/WheelchairControl`: STM32 code for motor control and communication.  
+  `/src/stm32/WheelchairControl`：STM32电机控制与通信代码。
 - `/docs`: Project documentation and test reports.  
   `/docs`：项目文档与测试报告。
 
@@ -57,7 +57,6 @@ This project develops a voice-activated smart wheelchair to enhance mobility for
 ## Future Work / 未来工作
 - Enhance dialect and natural language support.  
   增强方言和自然语言支持。
-
 - Optimize power efficiency and system stability.  
   优化能耗与系统稳定性。
 
