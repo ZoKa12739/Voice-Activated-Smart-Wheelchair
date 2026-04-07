@@ -106,13 +106,36 @@ WheelchairControl.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEP
 # 其他目标
 clean:
 <<<<<<< HEAD
-	-$(RM) WheelchairControl-gitee.elf WheelchairControl-gitee.list WheelchairControl-gitee.map default.size.stdout
+	-$(RM) WheelchairControl-gitee.elf WheelchairControl-gitee.list WheelchairControl-gitee.map WheelchairControl-gitee.hex default.size.stdout
 =======
-	-$(RM) WheelchairControl.elf WheelchairControl.list WheelchairControl.map default.size.stdout
+	-$(RM) WheelchairControl.elf WheelchairControl.list WheelchairControl.map WheelchairControl.hex default.size.stdout
 >>>>>>> 786f1618a70ce4136384469ca2ae15a95eecd699
 	-@echo ' '
 
+# 生成hex文件
+<<<<<<< HEAD
+WheelchairControl-gitee.hex: WheelchairControl-gitee.elf
+	arm-none-eabi-objcopy -O ihex "WheelchairControl-gitee.elf" "WheelchairControl-gitee.hex"
+	@echo '已生成hex文件： $@'
+	@echo ' '
+=======
+WheelchairControl.hex: WheelchairControl.elf
+	arm-none-eabi-objcopy -O ihex "WheelchairControl.elf" "WheelchairControl.hex"
+	@echo '已生成hex文件： $@'
+	@echo ' '
+>>>>>>> 786f1618a70ce4136384469ca2ae15a95eecd699
+
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+
+# 添加hex文件到构建目标
+all: main-build hex-files
+
+hex-files:
+<<<<<<< HEAD
+	$(MAKE) WheelchairControl-gitee.hex
+=======
+	$(MAKE) WheelchairControl.hex
+>>>>>>> 786f1618a70ce4136384469ca2ae15a95eecd699
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
