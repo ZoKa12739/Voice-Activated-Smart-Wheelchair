@@ -15,7 +15,7 @@
 
 1.  **智能感知层 (Raspberry Pi 4B):**
     *   **语音引擎：** 基于 `Vosk` 的离线语音识别，集成 `pypinyin` 模糊匹配算法，支持口音兼容。
-    *   **视觉感知：** 使用 `OpenCV` 进行环境感知与障碍物检测。
+    *   **视觉感知：** 使用 `YOLO` 进行环境感知与障碍物检测。
     *   **网络中枢：** 通过 `MQTT` 协议对接中国移动 `OneNET` 云平台。
 2.  **底层执行层 (STM32):**
     *   **电机驱动：** 高精度 PWM 闭环控制，确保轮椅行驶平稳。
@@ -29,12 +29,13 @@
 Raspberry_SamrtWheelChair/
 ├── raspberry/              # 树莓派核心：智能感知与交互层
 │   ├── vosk_v2.py          # 核心语音处理脚本
-│   ├── onenet_mqtt_final.py # 物联网云端通信模块
-│   ├── Pi_opencv/          # C++ 视觉推理工程
-│   ├── weixin_app/         # 微信小程序源码 (uni-app)
-│   └── wheelchair/         # 轮椅控制端 App 源码 (uni-app)
+│   ├── onenet_mqtt_final.py # 物联网云端通信模块（测试链接用）
+│   ├── project/            # 树莓派项目主体代码
+│   └── Pi_opencv/          # 在树莓派编译的opencv4.8.0源码库
 ├── stm32/                  # STM32 核心：硬件驱动与实时控制层
-│   └── WheelchairControl/  # MDK-ARM Keil 工程与驱动代码
+│    WheelchairControl/  # MDK-ARM Keil 工程与驱动代码
+├── weixin_app/             # 微信小程序源码
+│   └── uni_app/            # 使用uni-app开发
 ├── docs/                   # 项目文档与答辩资料
 └── README.md               # 项目主说明文档
 ```
@@ -52,6 +53,6 @@ Raspberry_SamrtWheelChair/
 ## 🔧 开发环境
 *   **Hardware:** Raspberry Pi 4B, STM32, Motor Driver
 *   **OS:** Raspberry Pi OS, Windows (for STM32 development)
-*   **Tools:** Keil uVision5, VS Code, Python 3.9, OpenCV 4.8.0
+*   **Tools:** Keil uVision5, VS Code, Python 3.9, OpenCV 4.8.0,HBuilderX,微信开发者工具
 
 ---
