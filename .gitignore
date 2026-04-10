@@ -1,0 +1,76 @@
+# --- STM32 (CubeIDE / CubeMX) ---
+# Ignore build outputs
+**/Debug/
+**/Release/
+**/obj/
+**/bin/
+
+# Ignore IDE specific files
+**/.settings/
+**/*.launch
+**/.browse
+**/*.sdf
+**/*.su
+**/*.cyclo
+
+# --- Keil MDK ---
+# Ignore Keil project artifacts
+*.uvguix.*
+*.uvoptx
+*.bak
+*.dep
+*.lst
+*.m51
+*.map
+*.obj
+*.htm
+*.lnp
+*.sct
+*.i
+*.crf
+*.o
+*.d
+*.axf
+*.elf
+*.hex
+*.bin
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+env/
+build/
+dist/
+*.spec
+
+# --- Qt / QMake ---
+# Ignore Qt/qmake build artifacts
+*.o
+*.obj
+Makefile
+*.qmake.stash
+*.pro.user
+moc_*.cpp
+moc_*.o
+ui_*.h
+*.a
+*.so
+*.dll
+*.exe
+
+# --- OpenCV ---
+# Ignore opencv build folder and binaries
+raspberry/opencv-4.8.0/build/
+raspberry/Pi_opencv/OpenCV_CameraMonitor
+
+# --- OS / Misc ---
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+*.log
