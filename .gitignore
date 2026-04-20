@@ -1,11 +1,20 @@
-# --- STM32 (CubeIDE / CubeMX) ---
-# Ignore build outputs
-**/Debug/
-**/Release/
-**/obj/
-**/bin/
+# =========================
+# Project ignore rules
+# Goal: commit only source and required configs
+# =========================
 
-# Ignore IDE specific files
+# --- OS / editor temp files ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*.log
+
+# --- VS Code / IDE local settings ---
+.vscode/
 **/.settings/
 **/*.launch
 **/.browse
@@ -13,33 +22,38 @@
 **/*.su
 **/*.cyclo
 
-# --- Keil MDK ---
-# Ignore Keil project artifacts
+# --- STM32 / generic embedded build outputs ---
+**/Debug/
+**/Release/
+**/obj/
+**/bin/
+*.o
+*.d
+*.a
+*.map
+*.elf
+*.hex
+*.bin
+
+# --- Keil MDK project temp files ---
 *.uvguix.*
 *.uvoptx
-*.bak
 *.dep
 *.lst
 *.m51
-*.map
-*.obj
 *.htm
 *.lnp
 *.sct
 *.i
 *.crf
-*.o
-*.d
 *.axf
-*.elf
-*.hex
-*.bin
 
 # --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
 .env
+.env.*
 venv/
 .venv/
 env/
@@ -47,30 +61,16 @@ build/
 dist/
 *.spec
 
-# --- Qt / QMake ---
-# Ignore Qt/qmake build artifacts
-*.o
-*.obj
-Makefile
+# --- Qt / QMake build outputs ---
 *.qmake.stash
 *.pro.user
 moc_*.cpp
 moc_*.o
 ui_*.h
-*.a
 *.so
 *.dll
 *.exe
 
-# --- OpenCV ---
-# Ignore opencv build folder and binaries
-raspberry/opencv-4.8.0/build/
+# --- Large third-party deps and local binaries ---
+raspberry/opencv-4.8.0/
 raspberry/Pi_opencv/OpenCV_CameraMonitor
-
-# --- OS / Misc ---
-.DS_Store
-Thumbs.db
-*.swp
-*.bak
-*.tmp
-*.log

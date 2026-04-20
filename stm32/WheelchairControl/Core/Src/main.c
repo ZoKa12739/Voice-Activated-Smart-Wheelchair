@@ -63,21 +63,13 @@ volatile char pi_command = 'S'; // 默认停止
 uint8_t current_gear = 3;       // 当前档位 (默认3档)
 float speed_ratio = 1.0f;       // 速度系数
 
-// 5. 核心阈值定义 
-#define JOY_CENTER  3102        // 中点电压对应值
-#define DEADZONE    200         // 死区
+// 5. 核心阈值定义 (适配 3.3V 全量程)
+#define JOY_CENTER  2048        // 1.65V 对应 4095 的一半
+#define DEADZONE    150         // 死区
 
-// 6. 偏离值定义 (解决前后速度不对称问题)
-// 我们保留约 0.6V 的安全余量
-// 0.6V 对应的 ADC 值大约是 745
-// 所以 DEV_DOWN = 3102 - 745 = 2357
-#define DEV_DOWN    2300 
-
-// 3.3V 对应的 ADC 值是 4095
-// 我们限制在 3.0V 左右 (安全余量)
-// 3.0V 对应 ADC 3720
-// DEV_UP = 3720 - 3102 = 618
-#define DEV_UP      600
+// 6. 最大偏移量定义 (0-2048 之间)
+// 为了保护，我们保留一点余量，最大偏移设为 2000
+#define MAX_DEV     2000 
 
 /* USER CODE END PV */
 
@@ -167,35 +159,34 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
     if ((x_raw > JOY_CENTER + DEADZONE || x_raw < JOY_CENTER - DEADZONE) ||
         (y_raw > JOY_CENTER + DEADZONE || y_raw < JOY_CENTER - DEADZONE))
     {
-        // 【状态 A：人工接管】
+        // 【状态 A：人工接管】直接透传原生 ADC 值到 DAC
         dac_x = x_raw;
         dac_y = y_raw;
     }
     else
     {
-        // 【状态 B：语音控制】
-
-        uint16_t val_fast_side = (uint16_t)(DEV_DOWN * speed_ratio); // 前进/左转用这个
+        // 【状态 B：语音控制】基于 speed_ratio 线性缩放
+        uint16_t current_dev = (uint16_t)(MAX_DEV * speed_ratio);
 
         switch (pi_command)
         {
-            case 'F': // 前进 (0V方向，原本很快，需要运算限速)
+            case 'F': // 前进 (Y轴向 0V 方向偏移)
                 dac_x = JOY_CENTER; 
-                dac_y = JOY_CENTER - val_fast_side; 
+                dac_y = JOY_CENTER - current_dev; 
                 break;
 
-            case 'B': // 后退 (3.3V方向，原本就很慢，不要运算，全速输出)
+            case 'B': // 后退 (Y轴向 3.3V 方向偏移)
                 dac_x = JOY_CENTER; 
-                dac_y = JOY_CENTER + DEV_UP; // 直接加最大偏离值(990)，尽力输出 3.3V
+                dac_y = JOY_CENTER + current_dev; 
                 break;
 
-            case 'L': // 左转 (0V方向，同前进，需要运算)
-                dac_x = JOY_CENTER - val_fast_side; 
+            case 'L': // 左转 (X轴向 0V 方向偏移)
+                dac_x = JOY_CENTER - current_dev; 
                 dac_y = JOY_CENTER; 
                 break;
 
-            case 'R': // 右转 (3.3V方向，同后退，不要运算)
-                dac_x = JOY_CENTER + DEV_UP; // 直接输出 3.3V
+            case 'R': // 右转 (X轴向 3.3V 方向偏移)
+                dac_x = JOY_CENTER + current_dev; 
                 dac_y = JOY_CENTER; 
                 break;
 
@@ -212,11 +203,11 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_y);
 
     // --- 修改调试打印 ---
-    // 打印当前的 "档位 (Gear)" 和 "指令 (CMD)"
+    // 打印当前的 "档位 (Gear)"、"指令 (CMD)"、ADC输入值和DAC输出值
     if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY)
     {
-      int len = sprintf(uart_buf, "Gear:%u (%d%%) | CMD:%c | X:%u | Y:%u\r\n", 
-        current_gear, (int)(speed_ratio * 100), pi_command, dac_x, dac_y);
+      int len = sprintf(uart_buf, "Gear:%u (%d%%) | CMD:%c | ADC_IN(X:%u, Y:%u) | DAC_OUT(X:%u, Y:%u)\r\n", 
+        current_gear, (int)(speed_ratio * 100), pi_command, x_raw, y_raw, dac_x, dac_y);
         HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, len, 10);
     }
 
