@@ -1,15 +1,16 @@
 # Infrared Obstacle Avoidance Integration - Findings
 
 ## Hardware Requirements
-- **Sensors**: 2x Infrared Distance Sensors (Analog output recommended).
+- **Sensors**: 2x Infrared Distance Sensors (Analog output).
 - **Placement**: One on the left side, one on the right side of the wheelchair.
 
 ## STM32 Pin Mapping (Finalized)
+- **Joystick X/Y**: PA0, PA1 (ADC1_IN0, ADC1_IN1)
 - **Left IR Sensor**: PA6 (ADC1_IN6)
 - **Right IR Sensor**: PA7 (ADC1_IN7)
-- *Rationale*: Allows proportional distance detection for deceleration logic.
+- *Note*: Rank order: IN0 -> IN1 -> IN6 -> IN7.
 
 ## Integration Principles
-- **Hard Safety (Highest Priority)**: Resides entirely on STM32. Raspberry Pi integration is forbidden for this safety loop to prevent OS-level lag or crashes from affecting braking.
-- **Behavior 1: Immediate Hard Stop**: If obstacle distance < StopThreshold, force DAC output to 2048 (Center/Stop) immediately.
-- **Behavior 2: Distant Deceleration**: If StopThreshold < distance < WarningThreshold, scale down `speed_ratio` proportionally.
+- **Hard Safety**: Logic resides on STM32. No Raspberry Pi integration for the core braking loop.
+- **Immediate Hard Stop**: Priority 0. If distance < StopThreshold, force DAC to 2048.
+- **Proportional Slowdown**: Priority 1. If StopThreshold < distance < WarningThreshold, scale `speed_ratio`.

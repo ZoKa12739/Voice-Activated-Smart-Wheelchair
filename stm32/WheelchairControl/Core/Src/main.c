@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>  // 用于 sprintf
 #include <string.h> // 用于 strlen
+#include "ir_avoidance.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +51,7 @@
 /* USER CODE BEGIN PV */
 
 // 1. ADC 数据存储 (DMA 自动搬运)
-volatile uint16_t adc_values[2];
+volatile uint16_t adc_values[4];
 
 // 2. 调试打印缓冲区
 char uart_buf[100];
@@ -65,11 +66,16 @@ float speed_ratio = 1.0f;       // 速度系数
 
 // 5. 核心阈值定义 (适配 3.3V 全量程)
 #define JOY_CENTER  2048        // 1.65V 对应 4095 的一半
-#define DEADZONE    150         // 死区
+#define DEADZONE    300         // 死区
 
 // 6. 最大偏移量定义 (0-2048 之间)
-// 为了保护，我们保留一点余量，最大偏移设为 2000
-#define MAX_DEV     2000 
+// 从 2000 减少到 1200：使前进输出 Y≈848(0.69V) 而非 48(0.039V)，电机驱动更稳定
+#define MAX_DEV     1200 
+
+// 7. DAC 安全输出边界 (12-bit: 0-4095)
+// 避免打到上下电源轨，降低外部模拟链路出现极值误判的风险
+#define DAC_SAFE_MIN 1
+#define DAC_SAFE_MAX 4094
 
 /* USER CODE END PV */
 
@@ -83,6 +89,17 @@ void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+static inline uint16_t clamp_u12_safe(uint16_t v)
+{
+  if (v < DAC_SAFE_MIN) {
+    return DAC_SAFE_MIN;
+  }
+  if (v > DAC_SAFE_MAX) {
+    return DAC_SAFE_MAX;
+  }
+  return v;
+}
 
 /* USER CODE END 0 */
 
@@ -122,12 +139,14 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  // 启动 ADC1 并开启 DMA 模式，数据存入 adc_values 数组
-HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
+  // 启动 ADC1 并开启 DMA 模式，数据存入 adc_values 数组 (扩展为 4 通道)
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 4);
   // // 启动 DAC 通道 1 (PA4)
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
   // // 启动 DAC 通道 2 (PA5)
   HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
+
+  IR_Avoidance_Init();
 
   HAL_UART_Receive_IT(&huart2, rx_buffer, 1);
 
@@ -144,20 +163,33 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
     * 此时，DMA 正在后台自动、连续地：
     * 1. 转换 PA0 (X轴) -> 存入 adc_values[0]
     * 2. 转换 PA1 (Y轴) -> 存入 adc_values[1]
-    * 3. 循环往复...
+    * 3. 转换 PA6 (左红外) -> 存入 adc_values[2]
+    * 4. 转换 PA7 (右红外) -> 存入 adc_values[3]
     */
 
-    // 1. 获取当前摇杆的物理位置
+    // 1. 获取当前传感器原始数据
     uint16_t x_raw = adc_values[0];
     uint16_t y_raw = adc_values[1];
+    uint16_t ir_left = adc_values[2];
+    uint16_t ir_right = adc_values[3];
 
-    // 2. 准备 DAC 输出变量
+    // 2. 红外避障处理：获取动态速度系数
+    float ir_speed_limit = IR_Avoidance_Process(ir_left, ir_right);
+
+    // 3. 准备 DAC 输出变量
     uint16_t dac_x = JOY_CENTER;
     uint16_t dac_y = JOY_CENTER;
+    uint8_t manual_override = ((x_raw > JOY_CENTER + DEADZONE || x_raw < JOY_CENTER - DEADZONE) ||
+                   (y_raw > JOY_CENTER + DEADZONE || y_raw < JOY_CENTER - DEADZONE));
+    uint8_t ir_blocked = (IR_GetState() == IR_STATE_BLOCKED_REVERSE);
 
-    // 3. 安全仲裁逻辑
-    if ((x_raw > JOY_CENTER + DEADZONE || x_raw < JOY_CENTER - DEADZONE) ||
-        (y_raw > JOY_CENTER + DEADZONE || y_raw < JOY_CENTER - DEADZONE))
+    // 4. 安全仲裁逻辑
+    if (ir_blocked)
+    {
+      // 【状态 A：红外强制接管】危险距离时优先后退，禁止摇杆继续前进
+      IR_Apply_Safety_Override(&dac_x, &dac_y);
+    }
+    else if (manual_override)
     {
         // 【状态 A：人工接管】直接透传原生 ADC 值到 DAC
         dac_x = x_raw;
@@ -165,27 +197,33 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
     }
     else
     {
-        // 【状态 B：语音控制】基于 speed_ratio 线性缩放
-        uint16_t current_dev = (uint16_t)(MAX_DEV * speed_ratio);
+        // 【状态 B：语音控制】基于 (档位系数 * 避障限速系数) 线性缩放
+        uint16_t current_dev = (uint16_t)(MAX_DEV * speed_ratio * ir_speed_limit);
+        if (current_dev > MAX_DEV) {
+          current_dev = MAX_DEV;
+        }
+        if (current_dev > (JOY_CENTER - 1U)) {
+          current_dev = (JOY_CENTER - 1U);
+        }
 
         switch (pi_command)
         {
-            case 'F': // 前进 (Y轴向 0V 方向偏移)
+            case 'F': // 前进
                 dac_x = JOY_CENTER; 
                 dac_y = JOY_CENTER - current_dev; 
                 break;
 
-            case 'B': // 后退 (Y轴向 3.3V 方向偏移)
+            case 'B': // 后退
                 dac_x = JOY_CENTER; 
                 dac_y = JOY_CENTER + current_dev; 
                 break;
 
-            case 'L': // 左转 (X轴向 0V 方向偏移)
+            case 'L': // 左转
                 dac_x = JOY_CENTER - current_dev; 
                 dac_y = JOY_CENTER; 
                 break;
 
-            case 'R': // 右转 (X轴向 3.3V 方向偏移)
+            case 'R': // 右转
                 dac_x = JOY_CENTER + current_dev; 
                 dac_y = JOY_CENTER; 
                 break;
@@ -198,16 +236,19 @@ HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 2);
         }
     }
 
+      // 统一输出钳位，确保最终写入 DAC 的值始终落在安全边界内
+      dac_x = clamp_u12_safe(dac_x);
+      dac_y = clamp_u12_safe(dac_y);
+
     // 执行 DAC 输出
     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_x);
     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_y);
 
     // --- 修改调试打印 ---
-    // 打印当前的 "档位 (Gear)"、"指令 (CMD)"、ADC输入值和DAC输出值
     if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY)
     {
-      int len = sprintf(uart_buf, "Gear:%u (%d%%) | CMD:%c | ADC_IN(X:%u, Y:%u) | DAC_OUT(X:%u, Y:%u)\r\n", 
-        current_gear, (int)(speed_ratio * 100), pi_command, x_raw, y_raw, dac_x, dac_y);
+      int len = sprintf(uart_buf, "G:%u IR:%d%% IRS:%s | CMD:%c | ADC(X:%u, Y:%u, L:%u, R:%u) | DAC(X:%u, Y:%u)\r\n", 
+        current_gear, (int)(ir_speed_limit * 100), IR_GetStateString(), pi_command, x_raw, y_raw, ir_left, ir_right, dac_x, dac_y);
         HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, len, 10);
     }
 
